@@ -8,3 +8,6 @@ __pycache__/
 data/*.json
 data/*.json.tmp
 data/*.db
+
+# Otros
+DEV-TESTS
