@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+!.env.example
+
+# Catálogos scrapeados (regenerables con POST /scrape y migrado a bbdd con el script scripts/import_json.py)
+data/*.json
+data/*.json.tmp
+data/*.db

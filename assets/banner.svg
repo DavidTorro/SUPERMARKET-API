@@ -1,0 +1,44 @@
+<svg width="1200" height="300" viewBox="0 0 1200 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="55%" stop-color="#111827"/>
+      <stop offset="100%" stop-color="#0b1220"/>
+    </linearGradient>
+
+    <!-- Degradado animado del subrayado: los colores avanzan en pasos
+         hacia la derecha, en bucle continuo -->
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8">
+        <animate attributeName="stop-color" values="#38bdf8; #f59e0b; #34d399; #38bdf8" dur="6s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="50%" stop-color="#34d399">
+        <animate attributeName="stop-color" values="#34d399; #38bdf8; #f59e0b; #34d399" dur="6s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" stop-color="#f59e0b">
+        <animate attributeName="stop-color" values="#f59e0b; #34d399; #38bdf8; #f59e0b" dur="6s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="300" fill="url(#bg)"/>
+
+  <!-- círculos decorativos -->
+  <circle cx="1050" cy="60" r="130" fill="none" stroke="#1e293b" stroke-width="1.5"/>
+  <circle cx="1090" cy="240" r="80" fill="none" stroke="#1e293b" stroke-width="1.5"/>
+  <circle cx="120" cy="260" r="100" fill="none" stroke="#1e293b" stroke-width="1.5"/>
+
+  <!-- bloque central: carrito + título + subrayado, centrado en el lienzo -->
+  <g transform="translate(178, 0)">
+    <!-- carrito -->
+    <g transform="translate(80, 92)" stroke="#38bdf8" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M0 0 h22 l16 76 h74 l14 -54 h-96"/>
+      <circle cx="48" cy="102" r="10" fill="#38bdf8" stroke="none"/>
+      <circle cx="100" cy="102" r="10" fill="#38bdf8" stroke="none"/>
+    </g>
+
+    <!-- título -->
+    <text x="240" y="150" font-family="Menlo, Consolas, monospace" font-size="58" font-weight="bold" fill="#f8fafc">SUPERMARKET API</text>
+    <rect x="243" y="172" width="520" height="5" rx="2.5" fill="url(#accent)"/>
+  </g>
+</svg>
