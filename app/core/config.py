@@ -14,6 +14,11 @@ class Settings(BaseSettings):
 
     data_dir: Path = Path(__file__).resolve().parents[2] / "data" # Directorio de datos (por defecto, ./data)
 
+    # Orígenes permitidos para CORS. Se configura en el .env (formato JSON):
+    # SUPERMARKET_API_CORS_ORIGINS=["https://dev.supermarket-api.online"]
+    # Vacío = ningún frontend externo puede llamar a la API desde el navegador.
+    cors_origins: list[str] = []
+
     backups_keep: int = 5 # Backups a conservar por supermercado (los más antiguos se borran solos)
     user_agent: str = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" # User Agent es importante para que los scrapers no sean bloqueados por los supermercados
 

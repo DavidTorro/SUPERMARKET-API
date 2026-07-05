@@ -5,7 +5,9 @@ Punto de entrada de la aplicación
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.api.router import api_router
+from app.core.config import settings
 from app.core.database import init_db
 
 # Configuración del logger
@@ -23,12 +25,20 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(
     title="Supermarket API",
-    version="1.0.0",
+    version="1.0.1",
     description=(
         "Complete product catalog (name, description, current estimated "
         "price and photo) from Mercadona, Consum and Masymas."
     ),
     lifespan=lifespan,
+)
+
+# CORS: permite que los frontends listados en settings.cors_origins llamen a la API
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_methods=["GET"],
+    allow_headers=["*"],
 )
 
 app.include_router(api_router)
