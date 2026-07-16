@@ -24,7 +24,7 @@ Supermarket API es una API REST autoalojada que extrae el **catálogo completo**
 
 ## ✨ Qué puedes hacer
 
-- 🛒 Descargar el catálogo **completo** de Mercadona, Consum y Masymas (~21.000 productos) con una sola petición.
+- 🛒 Descargar el catálogo **completo** de Mercadona, Consum, Masymas y Lidl (~26.000 productos) con una sola petición.
 - 🔍 Buscar productos por nombre, descripción o marca, con filtros por supermercado y categoría, paginados.
 - 📊 Consultar el estado de cada catálogo: cuántos productos hay y cuándo se scrapeó por última vez.
 - ⏱️ Lanzar scrapings en segundo plano y seguir su progreso sin bloquear la API.
@@ -37,7 +37,7 @@ Supermarket API es una API REST autoalojada que extrae el **catálogo completo**
 
 - **Catálogo completo, no muestras**: recorre todas las categorías y páginas de cada tienda online.
 - **Scraping resiliente**: reintentos con backoff, y las categorías que Mercadona rate-limita se recuperan en una pasada final pausada.
-- **Datos normalizados**: los tres supermercados devuelven formatos distintos; la API los unifica en un único esquema `Product`.
+- **Datos normalizados**: cada supermercado devuelve un formato distinto; la API los unifica en un único esquema `Product`.
 - **Backups con red de seguridad**: cada reemplazo de catálogo guarda antes un `.sql` del estado anterior, en la misma transacción.
 
 ## 🏛️ Arquitectura
@@ -75,6 +75,7 @@ flowchart LR
         direction TB
         D["🟢 mercadona.py"]
         E["🟠 aktios.py<br/>Consum + Masymas"]
+        L["🔵 lidl.py"]
     end
 
     subgraph S3["🏪 Tiendas online"]
@@ -82,13 +83,16 @@ flowchart LR
         F["tienda.mercadona.es"]
         G["tienda.consum.es"]
         H["tienda.masymas.com"]
+        I["www.lidl.es"]
     end
 
     B --> D
     B --> E
+    B --> L
     D -- "httpx async" --> F
     E -- "httpx async" --> G
     E -- "httpx async" --> H
+    L -- "httpx async" --> I
     C --> DB[("💽 MySQL / SQLite<br/>products<br/>product_backups")]
 
     classDef api fill:#0f172a,stroke:#38bdf8,color:#f8fafc,stroke-width:2px;
@@ -97,8 +101,8 @@ flowchart LR
     classDef user fill:#1f2937,stroke:#f59e0b,color:#fff7ed,stroke-width:2px,stroke-dasharray: 5 3;
 
     class A,B,C api;
-    class D,E scraper;
-    class F,G,H tienda;
+    class D,E,L scraper;
+    class F,G,H,I tienda;
     class U user;
 
     style S1 fill:#08111f,stroke:#38bdf8,stroke-width:1.5px,stroke-dasharray: 4 4,color:#e2e8f0
@@ -109,7 +113,7 @@ flowchart LR
 | Componente | Tecnología | Detalle |
 | ---------- | ---------- | ------- |
 | API | FastAPI + Uvicorn | Capa HTTP con GET, POST y **QUERY (RFC 10008)**. Swagger en `/docs`. Puerto **8000**. |
-| Scrapers | httpx asíncrono | Mercadona (API de categorías) y Aktios (API compartida por Consum y Masymas). |
+| Scrapers | httpx asíncrono | Mercadona (API de categorías), Aktios (API compartida por Consum y Masymas) y Lidl (API de búsqueda de su web). |
 | BBDD | MySQL / SQLite vía SQLAlchemy | `products` (catálogo) y `product_backups` (scripts .sql de respaldo). |
 
 ### 🏪 Fuentes de datos
@@ -119,6 +123,7 @@ flowchart LR
 | Mercadona | API pública `tienda.mercadona.es/api` (árbol de categorías) | ~4.400 |
 | Consum | API REST Aktios `tienda.consum.es/api/rest/V1.0` (paginada por offset) | ~9.200 |
 | Masymas | API REST Aktios `tienda.masymas.com/api/rest/V1.0` (misma plataforma) | ~7.700 |
+| Lidl | API de búsqueda `www.lidl.es/q/api/search` (doble pasada por offset) | ~4.800 |
 
 ---
 
@@ -130,7 +135,7 @@ flowchart LR
 | `QUERY` | `/products` | Igual, pero con los filtros en el body como JSON (RFC 10008) |
 | `GET` / `QUERY` | `/supermarkets` | Supermercados con nº de productos y fecha del último scraping |
 | `POST` | `/scrape` | Lanza el scraping de todos los supermercados en segundo plano |
-| `POST` | `/scrape/{supermarket}` | Lanza el scraping de uno: `mercadona`, `consum` o `masymas` |
+| `POST` | `/scrape/{supermarket}` | Lanza el scraping de uno: `mercadona`, `consum`, `masymas` o `lidl` |
 | `GET` / `QUERY` | `/scrape/status` | Estado de los trabajos de scraping |
 | `GET` | `/backups` | Lista los backups automáticos del catálogo |
 | `GET` | `/backups/{id}/download` | Descarga el backup como fichero `.sql` restaurable |
@@ -217,7 +222,8 @@ SUPERMARKET-API/
     │   ├── __init__.py      # Punto de entrada: scrape("mercadona")
     │   ├── http.py          # Cliente httpx y GET con reintentos
     │   ├── mercadona.py     # API de categorías de Mercadona
-    │   └── aktios.py        # API compartida por Consum y Masymas
+    │   ├── aktios.py        # API compartida por Consum y Masymas
+    │   └── lidl.py          # API de búsqueda de www.lidl.es
     │
     ├── models/              # Tablas de la base de datos (SQLAlchemy ORM)
     │   ├── product.py       # Tabla products
@@ -252,4 +258,4 @@ Este proyecto está bajo licencia **Apache 2.0** — puedes usarlo, modificarlo 
 
 Copyright (c) 2026 David Torro. Ver el archivo [LICENSE](LICENSE) para más detalles.
 
-> ⚠️ Los datos de productos pertenecen a sus respectivos supermercados (Mercadona, Consum y Masymas) y se extraen de sus tiendas online públicas. Este proyecto es educativo: úsalo de forma responsable y respeta los términos de uso de cada web.
+> ⚠️ Los datos de productos pertenecen a sus respectivos supermercados (Mercadona, Consum, Masymas y Lidl) y se extraen de sus tiendas online públicas. Este proyecto es educativo: úsalo de forma responsable y respeta los términos de uso de cada web.

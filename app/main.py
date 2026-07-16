@@ -25,10 +25,10 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(
     title="Supermarket API",
-    version="1.0.1",
+    version="1.1.0",
     description=(
         "Complete product catalog (name, description, current estimated "
-        "price and photo) from Mercadona, Consum and Masymas."
+        "price and photo) from Mercadona, Consum, Masymas and Lidl."
     ),
     lifespan=lifespan,
 )

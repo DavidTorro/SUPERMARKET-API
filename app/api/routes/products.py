@@ -25,7 +25,7 @@ def query_supermarkets(filters: SupermarketFilter | None = None) -> list[Superma
 # GET de productos con filtros en query params y paginación
 @router.get("/products", response_model=ProductPage)
 def products(
-    supermarket: str | None = Query(None, description="mercadona, consum or masymas"),
+    supermarket: str | None = Query(None, description="mercadona, consum, masymas or lidl"),
     q: str | None = Query(None, description="Search in name, description or brand"),
     category: str | None = Query(None, description="Filter by category"),
     page: int = Query(1, ge=1),
