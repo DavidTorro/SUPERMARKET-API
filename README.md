@@ -191,7 +191,7 @@ La tarea se ejecuta dentro del contenedor de la API y no necesita usar el domini
 público:
 
 ```bash
-python -c 'import os, httpx; response = httpx.post("http://127.0.0.1:8000/scrape", headers={"X-Scrape-Token": os.environ["SUPERMARKET_API_SCRAPE_TOKEN"]}, timeout=15); response.raise_for_status(); print(response.text)'
+python -c 'from urllib.request import*;from os import environ;print(urlopen(Request("http://127.0.0.1:8000/scrape",headers={"X-Scrape-Token":environ["SUPERMARKET_API_SCRAPE_TOKEN"]},method="POST"),timeout=15).read())'
 ```
 
 La respuesta `202` confirma que la API aceptó el trabajo. El estado de cada cadena
