@@ -179,6 +179,25 @@ SUPERMARKET_API_DATABASE_URL=mysql+pymysql://usuario:password@host:3306/supermar
 
 La base de datos debe existir (`CREATE DATABASE supermarket_api CHARACTER SET utf8mb4;`); las tablas se crean solas al arrancar la API. Si tienes catálogos JSON de versiones anteriores, impórtalos con `python -m scripts.import_json`.
 
+### Actualización diaria con Coolify
+
+Los endpoints que inician un scraping requieren el header `X-Scrape-Token`. Define
+`SUPERMARKET_API_SCRAPE_TOKEN` como un valor aleatorio largo en las variables de
+entorno de Coolify; no lo incluyas en el repositorio ni en el frontend.
+
+En **Scheduled Tasks** de la aplicación, asegúrate de que Coolify interpreta el
+cron en la zona horaria `Europe/Madrid` y crea una tarea diaria con `0 8 * * *`.
+La tarea se ejecuta dentro del contenedor de la API y no necesita usar el dominio
+público:
+
+```bash
+python -c 'import os, httpx; response = httpx.post("http://127.0.0.1:8000/scrape", headers={"X-Scrape-Token": os.environ["SUPERMARKET_API_SCRAPE_TOKEN"]}, timeout=15); response.raise_for_status(); print(response.text)'
+```
+
+La respuesta `202` confirma que la API aceptó el trabajo. El estado de cada cadena
+se puede consultar después en `GET /scrape/status`. El registro persistente de
+ejecuciones y la confirmación final de la tarea se incorporarán en una fase posterior.
+
 ---
 
 ## 📁 Estructura del proyecto

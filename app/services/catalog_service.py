@@ -7,6 +7,7 @@ from app.repositories import product_repository
 from app.schemas.product import ProductPage, SupermarketInfo
 from app.scrapers import SUPERMARKETS
 
+
 def get_supermarkets(name: str | None = None) -> list[SupermarketInfo]:
     """Estado del catálogo de cada supermercado
     Con name, solo los supermercados cuyo nombre lo contenga"""
@@ -23,6 +24,11 @@ def get_supermarkets(name: str | None = None) -> list[SupermarketInfo]:
     ]
 
 
+def get_categories(supermarket: str | None = None) -> list[str]:
+    """Categorías disponibles en todo el catálogo o en un supermercado."""
+    return product_repository.get_categories(supermarket)
+
+
 def get_products(
     supermarket: str | None,
     q: str | None,
@@ -31,7 +37,9 @@ def get_products(
     page_size: int,
 ) -> ProductPage:
     """Búsqueda paginada de productos"""
-    total, items = product_repository.search_products(supermarket, q, category, page, page_size)
+    total, items = product_repository.search_products(
+        supermarket, q, category, page, page_size
+    )
     return ProductPage(
         total=total,
         page=page,

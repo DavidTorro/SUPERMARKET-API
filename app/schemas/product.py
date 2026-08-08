@@ -5,6 +5,7 @@ Esquemas de los productos
 from datetime import datetime
 from pydantic import BaseModel, Field
 
+
 class Product(BaseModel):
     """Producto normalizado, igual para todos los supermercados"""
 
@@ -67,7 +68,7 @@ class ProductFilter(BaseModel):
     )
     q: str | None = Field(
         default=None,
-        description="Search in name, description or brand",
+        description="Search words in name, description, brand, category or EAN",
     )
     category: str | None = Field(
         default=None,
