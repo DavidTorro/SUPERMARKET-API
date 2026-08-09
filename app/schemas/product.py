@@ -3,6 +3,8 @@ Esquemas de los productos
 """
 
 from datetime import datetime
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -103,7 +105,7 @@ class ScrapeStatusFilter(BaseModel):
         default=None,
         description="Filter by supermarket",
     )
-    status: str | None = Field(
+    status: Literal["idle", "running", "completed", "failed"] | None = Field(
         default=None,
         description="Filter by status: idle | running | completed | failed",
     )
