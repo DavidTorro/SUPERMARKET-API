@@ -142,7 +142,8 @@ flowchart LR
 
 ```bash
 # Descargar todos los catálogos (tarda unos minutos, corre en segundo plano)
-curl -X POST http://localhost:8000/scrape
+curl -X POST http://localhost:8000/scrape \
+  -H "X-Scrape-Token: $SUPERMARKET_API_SCRAPE_TOKEN"
 
 # Buscar aceite de oliva en Mercadona (GET clásico)
 curl "http://localhost:8000/products?supermarket=mercadona&q=aceite%20de%20oliva"
