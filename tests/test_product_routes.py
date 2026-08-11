@@ -1,6 +1,6 @@
 import os
 import unittest
-from unittest.mock import patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 os.environ.setdefault("SUPERMARKET_API_SCRAPE_TOKEN", "test-scrape-token")
 
@@ -55,3 +55,32 @@ class ProductRoutesTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json()["detail"], "Supermarket not found: unknown")
         get_products.assert_not_called()
+
+    @patch("app.api.routes.products.new_client")
+    def test_product_image_proxies_an_allowed_image(self, new_client) -> None:
+        upstream = MagicMock(
+            content=b"image-content",
+            headers={"content-type": "image/jpeg"},
+        )
+        client = MagicMock()
+        client.get = AsyncMock(return_value=upstream)
+        client.__aenter__ = AsyncMock(return_value=client)
+        client.__aexit__ = AsyncMock(return_value=None)
+        new_client.return_value = client
+
+        url = "https://cdn-consum.aktiosdigitalservices.com/product.jpg"
+        response = self.client.get("/product-image", params={"url": url})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b"image-content")
+        self.assertEqual(response.headers["content-type"], "image/jpeg")
+        client.get.assert_awaited_once_with(url)
+
+    @patch("app.api.routes.products.new_client")
+    def test_product_image_rejects_unsupported_host(self, new_client) -> None:
+        response = self.client.get(
+            "/product-image", params={"url": "https://example.com/product.jpg"}
+        )
+
+        self.assertEqual(response.status_code, 400)
+        new_client.assert_not_called()

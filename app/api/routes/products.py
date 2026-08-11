@@ -2,7 +2,10 @@
 Router de productos
 """
 
-from fastapi import APIRouter, HTTPException, Query
+from urllib.parse import urlparse
+
+import httpx
+from fastapi import APIRouter, HTTPException, Query, Response
 from app.schemas.product import (
     ProductFilter,
     ProductPage,
@@ -10,9 +13,46 @@ from app.schemas.product import (
     SupermarketInfo,
 )
 from app.scrapers import SUPERMARKETS
+from app.scrapers.http import new_client
 from app.services import catalog_service
 
 router = APIRouter(tags=["products"])  # Declaración del router
+
+IMAGE_HOSTS = frozenset(
+    {
+        "cdn-consum.aktiosdigitalservices.com",
+        "cdn-fornes.aktiosdigitalservices.com",
+        "prod-mercadona.imgix.net",
+        "www.lidl.es",
+    }
+)
+
+
+@router.get("/product-image", response_class=Response)
+async def product_image(
+    url: str = Query(..., description="HTTPS URL of a product image"),
+) -> Response:
+    """Sirve fotos de los supermercados que no habilitan CORS para el navegador."""
+    parsed_url = urlparse(url)
+    if parsed_url.scheme != "https" or parsed_url.hostname not in IMAGE_HOSTS:
+        raise HTTPException(400, "Unsupported product image URL")
+
+    try:
+        async with new_client() as client:
+            upstream = await client.get(url)
+            upstream.raise_for_status()
+    except httpx.HTTPError as error:
+        raise HTTPException(502, "Unable to retrieve product image") from error
+
+    content_type = upstream.headers.get("content-type", "").split(";", 1)[0]
+    if not content_type.startswith("image/"):
+        raise HTTPException(502, "Product image source returned invalid content")
+
+    return Response(
+        content=upstream.content,
+        media_type=content_type,
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
 
 
 # GET de supermercados con un modelo de respuesta de lista de SupermarketInfo
