@@ -30,6 +30,7 @@ Supermarket API es una API REST autoalojada que extrae el **catálogo completo**
 - ⏱️ Lanzar scrapings en segundo plano y seguir su progreso sin bloquear la API.
 - 💾 Descargar backups `.sql` del catálogo para restaurarlo si un scraping sale mal.
 - 🔄 Cruzar el mismo producto entre cadenas gracias al código de barras (EAN).
+- 📄 Generar el PDF del catálogo incluyendo la imagen de cada producto.
 
 ---
 
@@ -139,6 +140,8 @@ flowchart LR
 | `GET` / `QUERY` | `/scrape/status` | Estado de los trabajos de scraping |
 | `GET` | `/backups` | Lista los backups automáticos del catálogo |
 | `GET` | `/backups/{id}/download` | Descarga el backup como fichero `.sql` restaurable |
+
+La generación de PDFs del catálogo incorpora ahora la imagen de cada producto, siempre que esté disponible.
 
 ```bash
 # Descargar todos los catálogos (tarda unos minutos, corre en segundo plano)
